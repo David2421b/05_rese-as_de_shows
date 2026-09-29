@@ -1,0 +1,166 @@
+# Entrega 2 — Maratón API REST: Festival Picnic 2026
+
+**Curso:** Desarrollo Web · Semestre 2026-2
+**Modalidad:** Equipos de hasta 4 integrantes
+**Valor:** 15 % de la nota final *(Nota 2.1 del Seguimiento 2)*
+**Cuándo:** martes 29 de septiembre y jueves 1 de octubre de 2026, en la clase de cada curso: **4 horas en total**
+**Escala:** 0–100 puntos, reportados sobre 5.0
+
+> `nota = (puntos / 100) × 5.0` — Ejemplo: 84 pts → **4.2 / 5.0**
+
+---
+
+## El reto
+
+Vamos a construir, entre los dos cursos, el backend completo del **Festival Picnic 2026**: tres días de música, cuatro escenarios, 30 000 asistentes por día.
+
+La plataforma está dividida en **15 microservicios**. Cada equipo es dueño de **uno**: su propia API REST, en su propio repositorio, conectada a una **base de datos PostgreSQL compartida** por todo el festival. Tienen **4 horas** de clase para dejarlo funcionando.
+
+Al final del jueves, el docente corre las **pruebas oficiales** contra todos los servicios.
+
+---
+
+## Los 15 módulos
+
+Cada módulo lo toma **un solo equipo entre los dos cursos**. No se repiten.
+
+| # | Módulo | Qué hace | Dificultad |
+|---|---|---|---|
+| 01 | Programación | Grilla de shows sin cruces de horario | ★★☆ |
+| 02 | Boletería | Venta de boletas sin pasarse del aforo | ★★☆ |
+| 03 | Comida | Pedidos con control de inventario | ★★★ |
+| 04 | Voluntarios | Turnos sin cruces y máximo 8 horas por día | ★★★ |
+| 05 | Reseñas | Calificación de shows solo con boleta | ★★☆ |
+| 06 | Parqueadero | Cupos por zona y placa única por día | ★★☆ |
+| 07 | Merch | Tienda con stock y límite por comprador | ★★★ |
+| 08 | Camping | Carpas para mayores de edad, con capacidad | ★★★ |
+| 09 | Transporte | Buses oficiales y sus estados | ★☆☆ |
+| 10 | Billetera cashless | Recargas y consumos, nunca en negativo | ★★☆ |
+| 11 | Incidentes médicos | Atenciones con estados en orden | ★★☆ |
+| 12 | Reportes | Consultas que cruzan todo el festival | ★★★ |
+| 13 | Objetos perdidos | Bodega y entrega con verificación de documento | ★☆☆ |
+| 14 | Acreditaciones | Prensa y fotógrafos con cupos | ★★☆ |
+| 15 | Meet & Greet | Encuentros con artistas para asistentes VIP | ★☆☆ |
+
+★☆☆ recomendado si trabajas solo · ★★★ recomendado para equipos de 4
+
+**Elección:** cada equipo se inscribe en la hoja compartida que publica el docente el **lunes 28 de septiembre a las 8:00 p. m.**, con el módulo, los integrantes y la URL del repositorio. Los módulos se asignan en **orden de inscripción**.
+
+---
+
+## Cómo funciona la base compartida
+
+Cada módulo es independiente: **ningún equipo depende del código de otro**.
+
+- Todas las tablas ya existen y vienen con datos: días, escenarios, artistas, asistentes, voluntarios y los datos iniciales de cada módulo.
+- Tu equipo **escribe solo en las tablas de su módulo**. Si necesita información de otro módulo (Reseñas necesita saber quién tiene boleta), **la lee directamente de la tabla**, sin llamar a otra API.
+- Nadie crea ni migra tablas. Usan `npm run sync` (`prisma db pull` + `prisma generate`), como en clase.
+
+> ⚠️ **Nunca ejecuten `prisma migrate` ni `prisma db push`.** La base es de todos: un `migrate` puede borrar las tablas de los demás equipos.
+
+---
+
+## El kit
+
+El docente entrega el **kit de la maratón** con:
+
+- `contratos/` — las [convenciones comunes](kit-estudiantes/contratos/CONVENCIONES.md) y el **contrato** de cada módulo: tablas, endpoints, validaciones, reglas de negocio y ejemplos de respuesta.
+- `pruebas/` — las **pruebas públicas** de cada módulo, que corren con un solo comando:
+
+```bash
+node pruebas/correr.mjs boleteria http://localhost:3000
+```
+
+Las pruebas públicas son casi la mitad del total. El resto son **pruebas ocultas**: casos borde que el docente corre al final. Todo lo que evalúan está escrito en el contrato, así que quien cumpla el contrato completo, y no solo las pruebas públicas, las pasa.
+
+---
+
+## Requisitos técnicos
+
+- [ ] **Node.js + Express + TypeScript + Prisma**, con las **cuatro capas** de clase: `domain`, `application`, `infrastructure`, `interface`.
+- [ ] Las reglas de negocio viven en los **casos de uso** (`application/`); los controladores solo reciben, delegan y responden.
+- [ ] Los casos de uso dependen de la **interfaz** del repositorio, no de Prisma.
+- [ ] `npm run dev` levanta la API en el puerto de la variable `PORT`.
+- [ ] Repositorio **público** en GitHub, con `.env.example`. El `.env` con la contraseña de la base **no** se sube.
+
+---
+
+## Cronograma de la maratón
+
+### Martes 29 de septiembre
+
+| Minuto | Qué pasa |
+|---|---|
+| 0–10 | Arranque: el docente entrega la conexión a la base; cada equipo clona el kit y crea su repositorio |
+| **Hito 1 · minuto 45** | Proyecto en cuatro capas, `npm run sync` hecho y el `GET` paginado en verde |
+| **Hito 2 · fin de clase** | CRUD completo del recurso principal |
+
+### Jueves 1 de octubre
+
+| Minuto | Qué pasa |
+|---|---|
+| 0–10 |  pruebas públicas contra lo que esté en GitHub hasta el miércoles a las 11:59 p. m. |
+| **Hito 3 · minuto 60** | Reglas de negocio, validaciones y endpoints especiales |
+| **Congelamiento** | **5:45 p. m.** (curso 61) · **7:45 p. m.** (curso 63). Se califica el último commit subido antes de esa hora. |
+| Últimos 15 min |  pruebas públicas y ocultas |
+
+> Suban (`git push`) seguido. Lo que no esté en GitHub a la hora de congelamiento no existe.
+
+---
+
+## Rúbrica · 100 puntos
+
+| # | Criterio | Pts | Cómo se evalúa |
+|---|---|---|---|
+| 1 | Pruebas públicas | 35 | Automático: `35 × aprobadas / total` |
+| 2 | Pruebas ocultas | 25 | Automático: `25 × aprobadas / total` |
+| 3 | Arquitectura en cuatro capas | 20 | Revisión del código |
+| 4 | Git | 10 | Revisión del historial |
+| 5 | README | 10 | Revisión del README |
+| | **TOTAL** | **100** | |
+
+**3. Arquitectura · 20 pts**
+🟢 Cuatro capas; las reglas en los casos de uso; los casos de uso dependen de interfaces de repositorio; Prisma solo en `infrastructure`; controladores delgados. · 🔵 Capas presentes, pero alguna regla en el controlador o Prisma usado fuera de `infrastructure`. · 🟡 Carpetas sin respetar el flujo: controladores con la lógica y el acceso a datos. · 🔴 Todo en uno o dos archivos.
+
+**4. Git · 10 pts**
+🟢 **En equipo:** cada integrante con al menos 3 commits propios y un pull request integrado. **Individual:** al menos 6 commits. En ambos casos, avance en las dos sesiones. · 🟡 Trabajo concentrado en una persona o todo en uno o dos commits. · 🔴 Un solo commit.
+
+**5. README · 10 pts**
+🟢 Módulo, integrantes y qué hizo cada uno; cómo instalar y correr; y **una regla de negocio explicada con sus palabras**: qué valida, en qué archivo está y cómo la probaron. · 🟡 README genérico o sin la regla explicada. · 🔴 Sin README.
+
+
+
+### Aporte individual
+
+En equipo, un integrante **sin commits propios** en el repositorio tiene nota máxima de **2.5 / 5.0**, sin importar la nota del equipo.
+
+---
+
+## Penalizaciones
+
+| Situación | Descuento |
+|---|---|
+| Ejecutar `migrate` o `db push` contra la base compartida | −20 pts al equipo responsable |
+| Escribir en tablas de otro módulo | −10 pts |
+| Proyecto sin TypeScript | −15 pts |
+| `.env` con la contraseña de la base subido a GitHub | −10 pts |
+| Copiar código de otro equipo | Nota 0 y reporte académico |
+
+---
+
+## Sobre la IA
+
+Pueden usarla. Un CRUD lo genera en segundos; lo que no hace sola es respetar un contrato que no escribió, leer tablas que no diseñó y pasar pruebas que no puede ver. **Lean el contrato completo**: ahí está todo lo que evalúan las pruebas ocultas.
+
+---
+
+## Checklist antes del congelamiento
+
+- [ ] Inscrito en la hoja con la URL del repositorio
+- [ ] `npm run dev` arranca con `PORT` y `DATABASE_URL` desde el `.env`
+- [ ] Cuatro capas; reglas en `application/`; Prisma solo en `infrastructure/`
+- [ ] Pruebas públicas en verde
+- [ ] Contrato leído completo: validaciones, orden de errores, campos editables
+- [ ] `.env.example` presente; `.env` fuera del repositorio
+- [ ] README con integrantes, instalación y la regla explicada
+- [ ] Último `git push` hecho antes de las 5:45 p. m. (61) o las 7:45 p. m. (63)
