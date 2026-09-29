@@ -33,4 +33,17 @@ export class PrismaResenasRepository implements ResenasRepository<Resena> {
 
     return { data, total: Number(conteo[0]?.total ?? 0) };
   }
+
+  async findById(id: number): Promise<Resena | null> {
+    const resena = await this.prisma.resenas.findUnique({ where: { id } });
+    if (!resena || resena.state === 'REMOVED') return null;
+    return resena as Resena;
+  }
+
+  async delete(id: number): Promise<void> {
+    await this.prisma.resenas.update({
+      where: { id },
+      data: { state: 'REMOVED' }
+    });
+  }
 }

@@ -12,4 +12,6 @@ export interface ResultadoListado<T> {
 
 export interface ResenasRepository<T> {
   listar(filtros: FiltrosResenas): Promise<ResultadoListado<T>>;
+  findById(id: number): Promise<T | null>;
+  delete(id: number): Promise<void>;
 }
