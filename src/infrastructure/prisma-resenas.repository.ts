@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@prisma/client';
 import type { FiltrosResenas, ResenasRepository, ResultadoListado } from '../domain/resenas.repository.js';
-import type { Resena } from '../application/listar-resenas.use-case.js';
+import type { Resena } from '../domain/resena.js';
 
 export class PrismaResenasRepository implements ResenasRepository<Resena> {
   constructor(private readonly prisma: PrismaClient) {}

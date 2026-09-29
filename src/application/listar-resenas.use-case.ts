@@ -1,19 +1,11 @@
 import type { FiltrosResenas, ResenasRepository } from '../domain/resenas.repository.js';
+import type { Resena } from '../domain/resena.js';
 
 export class ErrorSolicitud extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'ErrorSolicitud';
   }
-}
-
-export interface Resena {
-  id: number;
-  asistente_id: number;
-  show_id: number;
-  puntaje: number;
-  comentario: string | null;
-  state: string;
 }
 
 function enteroPositivo(valor: unknown, nombre: string, predeterminado?: number): number | undefined {
