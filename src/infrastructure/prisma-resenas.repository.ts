@@ -1,9 +1,26 @@
 import type { PrismaClient } from '@prisma/client';
 import type { FiltrosResenas, ResenasRepository, ResultadoListado } from '../domain/resenas.repository.js';
+import type { ResenaReferenciasRepository } from '../domain/resena-repository.js';
 import type { Resena } from '../application/listar-resenas.use-case.js';
 
-export class PrismaResenasRepository implements ResenasRepository<Resena> {
+export class PrismaResenasRepository implements ResenasRepository<Resena>, ResenaReferenciasRepository {
   constructor(private readonly prisma: PrismaClient) {}
+
+  async existeAsistente(id: number): Promise<boolean> {
+    const resultado = await this.prisma.$queryRawUnsafe<Array<{ existe: boolean }>>(
+      'SELECT EXISTS (SELECT 1 FROM asistentes WHERE id = $1) AS existe',
+      id,
+    );
+    return resultado[0]?.existe ?? false;
+  }
+
+  async obtenerDiaDelShow(showId: number): Promise<number | null> {
+    const resultado = await this.prisma.$queryRawUnsafe<Array<{ dia_id: number }>>(
+      'SELECT dia_id FROM shows WHERE id = $1 LIMIT 1',
+      showId,
+    );
+    return resultado[0]?.dia_id ?? null;
+  }
 
   async listar(filtros: FiltrosResenas): Promise<ResultadoListado<Resena>> {
     const condiciones = ["state <> 'REMOVED'"];
