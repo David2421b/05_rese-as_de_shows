@@ -1,12 +1,6 @@
 import type { FiltrosResenas, ResenasRepository } from '../domain/resenas.repository.js';
 import type { Resena } from '../domain/resena.js';
-
-export class ErrorSolicitud extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'ErrorSolicitud';
-  }
-}
+import { ErrorSolicitud } from './errors.js';
 
 function enteroPositivo(valor: unknown, nombre: string, predeterminado?: number): number | undefined {
   if (valor === undefined && predeterminado !== undefined) return predeterminado;

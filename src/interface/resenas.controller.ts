@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
-import { ErrorSolicitud, ListarResenas } from '../application/listar-resenas.use-case.js';
+import { ListarResenas } from '../application/listar-resenas.use-case.js';
+import { ErrorNoEncontrado, ErrorSolicitud } from '../application/errors.js';
 
 export class ResenasController {
   constructor(private readonly listarResenas: ListarResenas) {}
@@ -11,6 +12,10 @@ export class ResenasController {
     } catch (error) {
       if (error instanceof ErrorSolicitud) {
         res.status(400).json({ error: error.message });
+        return;
+      }
+      if (error instanceof ErrorNoEncontrado) {
+        res.status(404).json({ error: error.message });
         return;
       }
       next(error);
