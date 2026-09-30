@@ -12,4 +12,5 @@ export interface ResultadoListado<T> {
 
 export interface ResenasRepository<T> {
   listar(filtros: FiltrosResenas): Promise<ResultadoListado<T>>;
+  obtenerActivoPorId(id: number): Promise<T | null>;
 }

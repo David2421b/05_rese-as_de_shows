@@ -33,4 +33,12 @@ export class PrismaResenasRepository implements ResenasRepository<Resena> {
 
     return { data, total: Number(conteo[0]?.total ?? 0) };
   }
+
+  async obtenerActivoPorId(id: number): Promise<Resena | null> {
+    const filas = await this.prisma.$queryRawUnsafe<Resena[]>(
+      "SELECT * FROM resenas WHERE id = $1 AND state <> 'REMOVED'",
+      id,
+    );
+    return filas[0] ?? null;
+  }
 }
