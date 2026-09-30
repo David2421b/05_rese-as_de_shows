@@ -3,7 +3,7 @@ import type { Resena } from '../domain/resena.js';
 import { ErrorSolicitud } from './errors.js';
 
 function enteroPositivo(valor: unknown, nombre: string, predeterminado?: number): number | undefined {
-  if (valor === undefined && predeterminado !== undefined) return predeterminado;
+  if (valor === undefined) return predeterminado;
   if (typeof valor !== 'string' || !/^\d+$/.test(valor)) {
     throw new ErrorSolicitud(`${nombre} debe ser un entero positivo`);
   }
