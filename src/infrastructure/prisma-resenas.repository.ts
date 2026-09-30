@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
-import type { FiltrosResenas, ResenasRepository, ResultadoListado } from '../domain/resenas.repository.js';
+import type { FiltrosResenas, PromedioResenas, ResenasRepository, ResultadoListado } from '../domain/resenas.repository.js';
 import type { Resena } from '../domain/resena.js';
 
 export class PrismaResenasRepository implements ResenasRepository<Resena> {
@@ -40,5 +40,24 @@ export class PrismaResenasRepository implements ResenasRepository<Resena> {
       id,
     );
     return filas[0] ?? null;
+  }
+
+  async obtenerPromedioActivoPorShow(showId: number): Promise<PromedioResenas | null> {
+    const shows = await this.prisma.$queryRawUnsafe<Array<{ id: number }>>(
+      'SELECT id FROM shows WHERE id = $1',
+      showId,
+    );
+    if (shows.length === 0) return null;
+
+    const resultados = await this.prisma.$queryRawUnsafe<Array<{ total: number; promedio: number }>>(
+      "SELECT COUNT(*)::int AS total, COALESCE(ROUND(AVG(puntaje)::numeric, 2), 0)::float8 AS promedio FROM resenas WHERE show_id = $1 AND state = 'ACTIVE'",
+      showId,
+    );
+
+    return {
+      show_id: showId,
+      total: Number(resultados[0]?.total ?? 0),
+      promedio: Number(resultados[0]?.promedio ?? 0),
+    };
   }
 }
