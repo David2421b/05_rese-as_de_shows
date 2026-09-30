@@ -1,9 +1,9 @@
 import type { PrismaClient } from '@prisma/client';
 import type { FiltrosResenas, PromedioResenas, ResenasRepository, ResultadoListado } from '../domain/resenas.repository.js';
-import type { ResenaReferenciasRepository } from '../domain/resena-repository.js';
-import type { Resena } from '../domain/resena.js';
+import type { ResenaRepository } from '../domain/resena-repository.js';
+import type { NuevaResena, Resena } from '../domain/resena.js';
 
-export class PrismaResenasRepository implements ResenasRepository<Resena>, ResenaReferenciasRepository {
+export class PrismaResenasRepository implements ResenasRepository<Resena>, ResenaRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   async existeAsistente(id: number): Promise<boolean> {
@@ -20,6 +20,37 @@ export class PrismaResenasRepository implements ResenasRepository<Resena>, Resen
       showId,
     );
     return resultado[0]?.dia_id ?? null;
+  }
+
+  async tieneBoletaActiva(asistenteId: number, diaId: number): Promise<boolean> {
+    const resultado = await this.prisma.$queryRawUnsafe<Array<{ existe: boolean }>>(
+      "SELECT EXISTS (SELECT 1 FROM boletas WHERE asistente_id = $1 AND dia_id = $2 AND state = 'ACTIVE') AS existe",
+      asistenteId,
+      diaId,
+    );
+    return resultado[0]?.existe ?? false;
+  }
+
+  async existeResenaActiva(asistenteId: number, showId: number): Promise<boolean> {
+    const resultado = await this.prisma.$queryRawUnsafe<Array<{ existe: boolean }>>(
+      "SELECT EXISTS (SELECT 1 FROM resenas WHERE asistente_id = $1 AND show_id = $2 AND state = 'ACTIVE') AS existe",
+      asistenteId,
+      showId,
+    );
+    return resultado[0]?.existe ?? false;
+  }
+
+  async crear(datos: NuevaResena): Promise<Resena> {
+    const resultado = await this.prisma.$queryRawUnsafe<Resena[]>(
+      "INSERT INTO resenas (asistente_id, show_id, puntaje, comentario, state) VALUES ($1, $2, $3, $4, 'ACTIVE') RETURNING id, asistente_id, show_id, puntaje, comentario, state",
+      datos.asistente_id,
+      datos.show_id,
+      datos.puntaje,
+      datos.comentario ?? null,
+    );
+    const resena = resultado[0];
+    if (!resena) throw new Error('No fue posible crear la resena');
+    return resena;
   }
 
   async listar(filtros: FiltrosResenas): Promise<ResultadoListado<Resena>> {
