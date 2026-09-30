@@ -12,25 +12,29 @@ export class ErrorReglaResena extends Error {
   }
 }
 
-export async function crearResena(cuerpo: unknown, repositorio: ResenaRepository): Promise<Resena> {
-  const entrada = validarNuevaResena(cuerpo);
-  const resenaConDia = await validarReferenciasResena(entrada, repositorio);
+export class CrearResena {
+  constructor(private readonly repositorio: ResenaRepository) {}
 
-  const tieneBoleta = await repositorio.tieneBoletaActiva(
-    resenaConDia.asistente_id,
-    resenaConDia.dia_id,
-  );
-  if (!tieneBoleta) {
-    throw new ErrorReglaResena('Se requiere una boleta activa del dia del show');
+  async ejecutar(cuerpo: unknown): Promise<Resena> {
+    const entrada = validarNuevaResena(cuerpo);
+    const resenaConDia = await validarReferenciasResena(entrada, this.repositorio);
+
+    const tieneBoleta = await this.repositorio.tieneBoletaActiva(
+      resenaConDia.asistente_id,
+      resenaConDia.dia_id,
+    );
+    if (!tieneBoleta) {
+      throw new ErrorReglaResena('Se requiere una boleta activa del dia del show');
+    }
+
+    const yaExiste = await this.repositorio.existeResenaActiva(
+      resenaConDia.asistente_id,
+      resenaConDia.show_id,
+    );
+    if (yaExiste) {
+      throw new ErrorReglaResena('Ya existe una resena activa para este asistente y show');
+    }
+
+    return this.repositorio.crear(entrada);
   }
-
-  const yaExiste = await repositorio.existeResenaActiva(
-    resenaConDia.asistente_id,
-    resenaConDia.show_id,
-  );
-  if (yaExiste) {
-    throw new ErrorReglaResena('Ya existe una resena activa para este asistente y show');
-  }
-
-  return repositorio.crear(entrada);
 }
