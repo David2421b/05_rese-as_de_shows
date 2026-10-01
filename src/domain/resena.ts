@@ -5,6 +5,11 @@ export interface NuevaResena {
   comentario?: string | null;
 }
 
+export interface ActualizacionResena {
+  puntaje?: number;
+  comentario?: string | null;
+}
+
 export interface Resena {
   id: number;
   asistente_id: number;
