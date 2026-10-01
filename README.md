@@ -8,12 +8,12 @@ Este repositorio contiene el módulo 05, **Reseñas de shows**. La API permite c
 
 - **David Hernandez:** GET de reseñas, consulta por ID y promedio por show.
 - **Juan José Cano Giraldo:** POST de reseñas: validación de datos y referencias, reglas de boleta activa y reseña duplicada, y guardado en la base de datos.
-- **Tomas granda:** responsable asignado de PATCH. La implementación está en el código; falta verificarla con las pruebas.
-- **Juan pablo tafur:** responsable de DELETE lógico. Estado de implementación: pendiente.
+- **Tomas Granda:** implementación de PATCH para actualizar el puntaje o el comentario de una reseña.
+- **Juan Pablo Tafur:** implementación de DELETE lógico para marcar una reseña como `REMOVED`.
 
-## **Juan Pablo Tafur:**
+## Aporte de Juan Pablo Tafur: DELETE lógico
 
-implementé el borrado lógico de reseñas con DELETE.
+Implementé el borrado lógico de reseñas con DELETE.
 
 La ruta `DELETE /api/resenas/:id` elimina una reseña de forma lógica. No borra la fila de PostgreSQL: cambia su campo `state` a `REMOVED`.
 
@@ -29,7 +29,7 @@ El caso de uso está en `src/application/eliminar-resenas.use-case.ts`. Primero 
 
 ### Cómo se prueba
 
-La prueba pública **“DELETE hace borrado lógico y luego GET responde 404”** elimina la reseña creada durante la suite y comprueba que un GET posterior responda `404`.
+Cuando el POST válido crea una reseña, la prueba pública **“DELETE hace borrado lógico y luego GET responde 404”** usa el ID devuelto, comprueba que DELETE responda `200` y que un GET posterior responda `404`.
 
 ## David Hernandez: los métodos GET
 
@@ -52,97 +52,6 @@ La lista acepta estos parámetros de consulta:
 | `show_id` | Dejar solo las reseñas del show indicado. | Sin filtro |
 | `asistente_id` | Dejar solo las reseñas del asistente indicado. | Sin filtro |
 
-Ejemplo de petición:
-
-```http
-GET /api/resenas?page=1&limit=2&show_id=1
-```
-
-La respuesta incluye `pagination`, con el total de resultados, la página actual, el límite y el número total de páginas. La propiedad `data` contiene las reseñas encontradas. Por ejemplo:
-
-```json
-{
-  "pagination": {
-    "total": 3,
-    "currentPage": 1,
-    "limit": 2,
-    "totalPages": 2
-  },
-  "data": [
-    {
-      "id": 1,
-      "asistente_id": 1,
-      "show_id": 1,
-      "puntaje": 5,
-      "comentario": "El cierre con Fuego fue increíble",
-      "state": "ACTIVE",
-      "created_at": "2026-09-27T19:26:43.116Z",
-      "updated_at": "2026-09-27T19:26:43.116Z"
-    },
-    {
-      "id": 2,
-      "asistente_id": 2,
-      "show_id": 1,
-      "puntaje": 4,
-      "comentario": "Muy buen show, el sonido se cortó un momento",
-      "state": "ACTIVE",
-      "created_at": "2026-09-27T19:26:43.116Z",
-      "updated_at": "2026-09-27T19:26:43.116Z"
-    }
-  ]
-}
-```
-
-El ejemplo usa las reseñas iniciales del contrato. Los resultados pueden variar si cambian los datos. La consulta se ordena por ID ascendente y omite registros cuyo estado es `REMOVED`. Los valores por defecto permiten hacer `GET /api/resenas` sin parámetros. Si un parámetro numérico no es entero positivo, o si `limit` es mayor que 50, la API devuelve `400`.
-
-### 2. Consultar una reseña por ID
-
-Ejemplo:
-
-```http
-GET /api/resenas/1
-```
-
-Cuando encuentra una reseña que no está eliminada, responde `200` con la reseña dentro de `data`:
-
-```json
-{
-  "data": {
-    "id": 1,
-    "asistente_id": 1,
-    "show_id": 1,
-    "puntaje": 5,
-    "comentario": "El cierre con Fuego fue increíble",
-    "state": "ACTIVE",
-    "created_at": "2026-09-27T19:26:43.116Z",
-    "updated_at": "2026-09-27T19:26:43.116Z"
-  }
-}
-```
-
-El ID se valida antes de consultar la base. Si el formato no es un entero positivo, devuelve `400`. Si el ID no existe o la reseña está en estado `REMOVED`, devuelve `404`.
-
-### 3. Consultar el promedio de un show
-
-Ejemplo:
-
-```http
-GET /api/resenas/show/1/promedio
-```
-
-La respuesta contiene el ID del show, el total de reseñas activas y el promedio redondeado a dos decimales:
-
-```json
-{
-  "data": {
-    "show_id": 1,
-    "total": 3,
-    "promedio": 4.67
-  }
-}
-```
-
-El contrato usa como ejemplo el show 1 con tres reseñas y promedio `4.67`. Si el show existe, pero no tiene reseñas activas, el promedio es `0`. Un show inexistente produce `404`, y un `showId` inválido produce `400`.
 
 ### Cómo se procesa una petición GET
 
@@ -154,7 +63,11 @@ Para entender el recorrido, uso el promedio como ejemplo: Express recibe la URL 
 - **Contratos de dominio — `src/domain/resenas.repository.ts`:** definen las operaciones que los casos de uso necesitan, sin depender directamente de Prisma.
 - **Repositorio — `src/infrastructure/prisma-resenas.repository.ts`:** implementa esas operaciones con consultas a PostgreSQL. En el listado usa condiciones para los filtros, parámetros para los valores y `LIMIT`/`OFFSET` para traer la página. Para el promedio consulta `COUNT` y `AVG`, contando solo las reseñas con estado `ACTIVE` y redondeando el resultado a dos decimales.
 
-## Aporte de Juan: creación de reseñas con POST
+## Aporte de Tomas Granda: actualización con PATCH
+
+La ruta `PATCH /api/resenas/:id` permite cambiar únicamente el puntaje o el comentario. La validación de los campos está en `src/application/validar-actualizacion-resena.ts`; el caso de uso está en `src/application/actualizar-resena.use-case.ts` y el repositorio actualiza la fila en `src/infrastructure/prisma-resenas.repository.ts`. Si encuentra una reseña activa y los datos son válidos, la API responde `200` con la reseña actualizada dentro de `data`.
+
+## Aporte de Juan José Cano Giraldo: creación de reseñas con POST
 
 La ruta `POST /api/resenas` recibe el ID del asistente, el ID del show, el puntaje y, si se desea, un comentario. El caso de uso está en `src/application/crear-resena.ts`. Antes de guardar, valida las referencias y comprueba las reglas del módulo. El repositorio de Prisma guarda la reseña en la tabla `resenas`.
 
@@ -162,11 +75,11 @@ Una reseña válida debe tener un puntaje entero entre 1 y 5. El comentario pued
 
 ### Regla de negocio y cómo la probamos
 
-Para reseñar un show, el asistente debe tener una boleta activa para el día en que se presenta. Además, no puede tener dos reseñas activas para el mismo show. Esta regla evita reseñas de personas que no asistieron y duplicados activos.
+Antes de guardar una reseña, comprobamos que el asistente exista y tenga una boleta con estado `ACTIVE` para el mismo día en que se presenta el show. También comprobamos que no tenga otra reseña activa para ese show. Así, solo puede reseñar alguien con entrada válida y no se crean duplicados activos. Si no cumple alguna de estas dos reglas, la API responde `409`.
 
-La comprobación está en `src/application/crear-resena.ts`: primero consulta si existe una boleta activa para el día del show y luego si ya existe una reseña activa de ese asistente para ese show. Si se incumple alguna regla, el caso de uso genera un error de conflicto y la API responde `409`. La búsqueda de asistentes, shows y boletas se organiza en `src/application/validar-referencias-resena.ts` y en el repositorio de infraestructura.
+La decisión está en `src/application/crear-resena.ts`. La existencia del asistente y el día del show se validan en `src/application/validar-referencias-resena.ts`; las consultas de solo lectura a `asistentes`, `shows` y `boletas` están en `src/infrastructure/prisma-resenas.repository.ts`.
 
-La suite pública del kit incluye los casos **“Regla: una sola reseña por asistente y show (409)”** y **“Regla: solo reseña quien tiene boleta del día del show (409)”** para verificar estas respuestas. También incluye el caso de creación válida. Como la base es compartida y puede haber cambiado por ejecuciones anteriores, el resultado depende de que los datos estén en el estado que espera el kit; no cambiamos datos precargados manualmente.
+Probamos el POST con la suite pública del kit: `node kit-festival/kit-estudiantes/pruebas/correr.mjs resenas http://localhost:3000`. La suite incluye los casos de reseña duplicada y de asistente sin boleta, que deben responder `409`, y un caso de creación válida, que debe responder `201`. En la última ejecución compartida, las dos pruebas de reglas respondieron como se esperaba; el caso válido recibió `409` porque la consulta no encontró una boleta activa para los datos de prueba. No modificamos manualmente los datos precargados.
 
 ## Instalar y ejecutar
 
@@ -189,6 +102,8 @@ Iniciar la API:
 ```bash
 npm run dev
 ```
+
+Ejecuta los comandos desde la carpeta del proyecto que contiene `package.json`. Deja la API corriendo y abre una segunda terminal en esa misma carpeta para ejecutar las pruebas.
 
 Para hacer consultas GET manuales, con la API iniciada, se pueden usar estos comandos:
 
