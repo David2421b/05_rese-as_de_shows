@@ -108,4 +108,12 @@ export class PrismaResenasRepository implements ResenasRepository<Resena>, Resen
       promedio: Number(resultados[0]?.promedio ?? 0),
     };
   }
+  async borrarLogicamente(id: number): Promise<boolean> {
+  const filas = await this.prisma.$queryRawUnsafe<Array<{ id: number }>>(
+    "UPDATE resenas SET state = 'REMOVED' WHERE id = $1 AND state <> 'REMOVED' RETURNING id",
+    id,
+  );
+
+  return filas.length > 0;
+  }
 }
