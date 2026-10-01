@@ -11,6 +11,26 @@ Este repositorio contiene el módulo 05, **Reseñas de shows**. La API permite c
 - **Tomas granda:** responsable de PATCH. Estado de implementación: pendiente.
 - **Juan pablo tafur:** responsable de DELETE lógico. Estado de implementación: pendiente.
 
+## **Juan Pablo Tafur:**
+
+implementé el borrado lógico de reseñas con DELETE.
+
+La ruta `DELETE /api/resenas/:id` elimina una reseña de forma lógica. No borra la fila de PostgreSQL: cambia su campo `state` a `REMOVED`.
+
+El caso de uso está en `src/application/eliminar-resenas.use-case.ts`. Primero valida que el ID sea un entero positivo. Si es inválido, la API responde `400`. Si la reseña no existe o ya fue eliminada, responde `404`. Si la encuentra activa, el repositorio la marca como `REMOVED` y la API responde `200`
+
+### Cómo se procesa la petición DELETE
+
+- **Ruta — `src/interface/resenas.routes.ts`:** conecta `DELETE /:id` con el controlador.
+- **Controlador — `src/interface/resenas.controller.ts`:** delega al caso de uso y devuelve `200`, `400` o `404`.
+- **Caso de uso — `src/application/eliminar-resenas.use-case.ts`:** valida el ID y trata como no encontrada una reseña que no se pudo borrar.
+- **Contrato de dominio — `src/domain/resenas.repository.ts`:** declara `borrarLogicamente`; el caso de uso depende de esta interfaz.
+- **Repositorio — `src/infrastructure/prisma-resenas.repository.ts`:** cambia `state` a `REMOVED` si la reseña todavía no está eliminada.
+
+### Cómo se prueba
+
+La prueba pública **“DELETE hace borrado lógico y luego GET responde 404”** elimina la reseña creada durante la suite y comprueba que un GET posterior responda `404`.
+
 ## David Hernandez: los métodos GET
 
 Implementé tres consultas. Todas empiezan por `/api/resenas`:
