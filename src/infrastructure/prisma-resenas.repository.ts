@@ -1,7 +1,7 @@
 import type { PrismaClient } from '@prisma/client';
 import type { FiltrosResenas, PromedioResenas, ResenasRepository, ResultadoListado } from '../domain/resenas.repository.js';
 import type { ResenaRepository } from '../domain/resena-repository.js';
-import type { NuevaResena, Resena } from '../domain/resena.js';
+import type { ActualizacionResena, NuevaResena, Resena } from '../domain/resena.js';
 
 export class PrismaResenasRepository implements ResenasRepository<Resena>, ResenaRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -87,6 +87,30 @@ export class PrismaResenasRepository implements ResenasRepository<Resena>, Resen
       "SELECT * FROM resenas WHERE id = $1 AND state <> 'REMOVED'",
       id,
     );
+    return filas[0] ?? null;
+  }
+
+  async actualizarActivoPorId(id: number, cambios: ActualizacionResena): Promise<Resena | null> {
+    const asignaciones: string[] = [];
+    const parametros: Array<number | string | null> = [];
+
+    if (Object.hasOwn(cambios, 'puntaje')) {
+      parametros.push(cambios.puntaje as number);
+      asignaciones.push(`puntaje = $${parametros.length}`);
+    }
+    if (Object.hasOwn(cambios, 'comentario')) {
+      parametros.push(cambios.comentario as string | null);
+      asignaciones.push(`comentario = $${parametros.length}`);
+    }
+
+    asignaciones.push('updated_at = NOW()');
+    parametros.push(id);
+
+    const filas = await this.prisma.$queryRawUnsafe<Resena[]>(
+      `UPDATE resenas SET ${asignaciones.join(', ')} WHERE id = $${parametros.length} AND state <> 'REMOVED' RETURNING *`,
+      ...parametros,
+    );
+
     return filas[0] ?? null;
   }
 

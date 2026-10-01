@@ -8,7 +8,7 @@ Este repositorio contiene el módulo 05, **Reseñas de shows**. La API permite c
 
 - **David Hernandez:** GET de reseñas, consulta por ID y promedio por show.
 - **Juan José Cano Giraldo:** POST de reseñas: validación de datos y referencias, reglas de boleta activa y reseña duplicada, y guardado en la base de datos.
-- **Tomas granda:** responsable de PATCH. Estado de implementación: pendiente.
+- **Tomas granda:** responsable asignado de PATCH. La implementación está en el código; falta verificarla con las pruebas.
 - **Juan pablo tafur:** responsable de DELETE lógico. Estado de implementación: pendiente.
 
 ## **Juan Pablo Tafur:**
