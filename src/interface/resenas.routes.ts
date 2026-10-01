@@ -6,7 +6,7 @@ import { ObtenerPromedioResenas } from '../application/obtener-promedio-resenas.
 import { prisma } from '../infrastructure/prisma.js';
 import { PrismaResenasRepository } from '../infrastructure/prisma-resenas.repository.js';
 import { ResenasController } from './resenas.controller.js';
-import { EliminarResena } from '../application/eliminar-resena.use-case.js';
+import { EliminarResena } from '../application/eliminar-resenas.use-case.js';
 
 const router = Router();
 const repositorio = new PrismaResenasRepository(prisma);

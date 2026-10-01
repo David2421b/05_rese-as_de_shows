@@ -6,7 +6,7 @@ import { ObtenerPromedioResenas } from '../application/obtener-promedio-resenas.
 import { ErrorNoEncontrado, ErrorSolicitud } from '../application/errors.js';
 import { ErrorReferenciaResena } from '../application/validar-referencias-resena.js';
 import { ErrorValidacionResena } from '../application/validar-nueva-resena.js';
-import { EliminarResena } from '../application/eliminar-resena.use-case.js';
+import { EliminarResena } from '../application/eliminar-resenas.use-case.js';
 
 export class ResenasController {
   constructor(
