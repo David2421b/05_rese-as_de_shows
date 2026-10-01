@@ -10,3 +10,10 @@ export interface ResenaRepository extends ResenaReferenciasRepository {
   existeResenaActiva(asistenteId: number, showId: number): Promise<boolean>;
   crear(datos: NuevaResena): Promise<Resena>;
 }
+
+export interface ResenasRepository<T> {
+  listar(filtros: FiltrosResenas): Promise<ResultadoListado<T>>;
+  obtenerActivoPorId(id: number): Promise<T | null>;
+  obtenerPromedioActivoPorShow(showId: number): Promise<PromedioResenas | null>;
+  borrarLogicamente(id: number): Promise<boolean>;
+}
