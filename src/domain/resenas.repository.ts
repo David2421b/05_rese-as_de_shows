@@ -16,9 +16,15 @@ export interface PromedioResenas {
   promedio: number;
 }
 
+export interface CambiosResena {
+  puntaje?: number;
+  comentario?: string | null;
+}
+
 export interface ResenasRepository<T> {
   listar(filtros: FiltrosResenas): Promise<ResultadoListado<T>>;
   obtenerActivoPorId(id: number): Promise<T | null>;
+  actualizarActiva(id: number, cambios: CambiosResena): Promise<T | null>;
   obtenerPromedioActivoPorShow(showId: number): Promise<PromedioResenas | null>;
   borrarLogicamente(id: number): Promise<boolean>;
 }

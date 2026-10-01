@@ -7,6 +7,7 @@ import { ErrorNoEncontrado, ErrorSolicitud } from '../application/errors.js';
 import { ErrorReferenciaResena } from '../application/validar-referencias-resena.js';
 import { ErrorValidacionResena } from '../application/validar-nueva-resena.js';
 import { EliminarResena } from '../application/eliminar-resenas.use-case.js';
+import { ActualizarResena } from '../application/actualizar-resena.use-case.js';
 
 export class ResenasController {
   constructor(
@@ -15,6 +16,7 @@ export class ResenasController {
     private readonly crearResena: CrearResena,
     private readonly obtenerPromedio: ObtenerPromedioResenas,
     private readonly eliminarResena: EliminarResena,
+    private readonly actualizarResena: ActualizarResena,
   ) {}
 
   listar = async (req: Request, res: Response, next: NextFunction) => {
@@ -95,6 +97,23 @@ export class ResenasController {
       res.status(200).json({ message: 'Reseña eliminada' });
     } catch (error) {
       if (error instanceof ErrorSolicitud) {
+        res.status(400).json({ error: error.message });
+        return;
+      }
+      if (error instanceof ErrorNoEncontrado) {
+        res.status(404).json({ error: error.message });
+        return;
+      }
+      next(error);
+    }
+  };
+
+  actualizar = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const resena = await this.actualizarResena.ejecutar(req.params.id, req.body);
+      res.status(200).json({ data: resena });
+    } catch (error) {
+      if (error instanceof ErrorSolicitud || error instanceof ErrorValidacionResena) {
         res.status(400).json({ error: error.message });
         return;
       }

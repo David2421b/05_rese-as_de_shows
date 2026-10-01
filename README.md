@@ -2,13 +2,13 @@
 
 ## Módulo
 
-Este repositorio contiene el módulo 05, **Reseñas de shows**. La API permite consultar reseñas, obtener el promedio de un show y crear reseñas. El proyecto usa Node.js, Express, TypeScript y Prisma 7, y organiza el código en las capas `domain`, `application`, `infrastructure` e `interface`.
+Este repositorio contiene el módulo 05, **Reseñas de shows**. La API permite consultar, crear, editar y eliminar lógicamente reseñas, además de obtener el promedio de un show. El proyecto usa Node.js, Express, TypeScript y Prisma 7, y organiza el código en las capas `domain`, `application`, `infrastructure` e `interface`.
 
 ## Integrantes y aportes
 
 - **David Hernandez:** GET de reseñas, consulta por ID y promedio por show.
 - **Juan José Cano Giraldo:** POST de reseñas: validación de datos y referencias, reglas de boleta activa y reseña duplicada, y guardado en la base de datos.
-- **Tomas granda:** responsable de PATCH. Estado de implementación: pendiente.
+- **Tomas granda:** responsable de PATCH. Implementó la edición de puntaje y comentario.
 - **Juan pablo tafur:** responsable de DELETE lógico. Estado de implementación: pendiente.
 
 ## **Juan Pablo Tafur:**
@@ -167,6 +167,12 @@ Para reseñar un show, el asistente debe tener una boleta activa para el día en
 La comprobación está en `src/application/crear-resena.ts`: primero consulta si existe una boleta activa para el día del show y luego si ya existe una reseña activa de ese asistente para ese show. Si se incumple alguna regla, el caso de uso genera un error de conflicto y la API responde `409`. La búsqueda de asistentes, shows y boletas se organiza en `src/application/validar-referencias-resena.ts` y en el repositorio de infraestructura.
 
 La suite pública del kit incluye los casos **“Regla: una sola reseña por asistente y show (409)”** y **“Regla: solo reseña quien tiene boleta del día del show (409)”** para verificar estas respuestas. También incluye el caso de creación válida. Como la base es compartida y puede haber cambiado por ejecuciones anteriores, el resultado depende de que los datos estén en el estado que espera el kit; no cambiamos datos precargados manualmente.
+
+## Aporte de Tomas: edición de reseñas con PATCH
+
+`PATCH /api/resenas/:id` permite cambiar `puntaje`, `comentario` o ambos. El cuerpo debe incluir al menos uno de esos campos; el puntaje debe ser un entero entre 1 y 5 y el comentario puede ser texto de hasta 500 caracteres o `null` para limpiarlo. Enviar campos como `show_id` o `asistente_id` produce `400`. Una reseña inexistente o con `state = 'REMOVED'` produce `404`; una edición válida responde `200` con la reseña actualizada dentro de `data`.
+
+La validación y el caso de uso están en `src/application/validar-cambios-resena.ts` y `src/application/actualizar-resena.use-case.ts`. El contrato del repositorio está en `src/domain/resenas.repository.ts`; la actualización SQL parametrizada está en `src/infrastructure/prisma-resenas.repository.ts`, y la ruta/controlador en `src/interface/`. Se puede probar enviando un PATCH válido a una reseña activa y luego consultándola con GET, además de probar un campo no editable, un puntaje fuera de rango y un ID inexistente.
 
 ## Instalar y ejecutar
 

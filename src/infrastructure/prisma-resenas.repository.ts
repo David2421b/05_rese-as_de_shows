@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
-import type { FiltrosResenas, PromedioResenas, ResenasRepository, ResultadoListado } from '../domain/resenas.repository.js';
+import type { CambiosResena, FiltrosResenas, PromedioResenas, ResenasRepository, ResultadoListado } from '../domain/resenas.repository.js';
 import type { ResenaRepository } from '../domain/resena-repository.js';
 import type { NuevaResena, Resena } from '../domain/resena.js';
 
@@ -87,6 +87,29 @@ export class PrismaResenasRepository implements ResenasRepository<Resena>, Resen
       "SELECT * FROM resenas WHERE id = $1 AND state <> 'REMOVED'",
       id,
     );
+    return filas[0] ?? null;
+  }
+
+  async actualizarActiva(id: number, cambios: CambiosResena): Promise<Resena | null> {
+    const asignaciones: string[] = [];
+    const valores: unknown[] = [];
+
+    if (cambios.puntaje !== undefined) {
+      valores.push(cambios.puntaje);
+      asignaciones.push(`puntaje = $${valores.length}`);
+    }
+    if (cambios.comentario !== undefined) {
+      valores.push(cambios.comentario);
+      asignaciones.push(`comentario = $${valores.length}`);
+    }
+
+    // El caso de uso valida que exista al menos un campo editable.
+    valores.push(id);
+    const filas = await this.prisma.$queryRawUnsafe<Resena[]>(
+      `UPDATE resenas SET ${asignaciones.join(', ')} WHERE id = $${valores.length} AND state <> 'REMOVED' RETURNING *`,
+      ...valores,
+    );
+
     return filas[0] ?? null;
   }
 
