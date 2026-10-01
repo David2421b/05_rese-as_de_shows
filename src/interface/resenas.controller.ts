@@ -6,6 +6,7 @@ import { ObtenerPromedioResenas } from '../application/obtener-promedio-resenas.
 import { ErrorNoEncontrado, ErrorSolicitud } from '../application/errors.js';
 import { ErrorReferenciaResena } from '../application/validar-referencias-resena.js';
 import { ErrorValidacionResena } from '../application/validar-nueva-resena.js';
+import { EliminarResena } from '../application/eliminar-resena.use-case.js';
 
 export class ResenasController {
   constructor(
@@ -13,6 +14,7 @@ export class ResenasController {
     private readonly obtenerResena: ObtenerResena,
     private readonly crearResena: CrearResena,
     private readonly obtenerPromedio: ObtenerPromedioResenas,
+    private readonly eliminarResena: EliminarResena,
   ) {}
 
   listar = async (req: Request, res: Response, next: NextFunction) => {
@@ -86,4 +88,22 @@ export class ResenasController {
       next(error);
     }
   };
+
+  eliminar = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await this.eliminarResena.ejecutar(req.params.id);
+      res.status(200).json({ message: 'Reseña eliminada' });
+    } catch (error) {
+      if (error instanceof ErrorSolicitud) {
+        res.status(400).json({ error: error.message });
+        return;
+      }
+      if (error instanceof ErrorNoEncontrado) {
+        res.status(404).json({ error: error.message });
+        return;
+      }
+      next(error);
+    }
+  };
+  
 }
